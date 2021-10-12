@@ -10,6 +10,7 @@ import java.util.HashMap;
 
 public class ChatProviderServerProxy implements Runnable {
 
+    // region DummyChatter
     private class DummyChatter implements IChatter {
 
         private String name;
@@ -28,6 +29,7 @@ public class ChatProviderServerProxy implements Runnable {
             return name;
         }
     }
+    // endregion
 
     private Socket socket;
     private ChatProvider provider;
@@ -53,8 +55,10 @@ public class ChatProviderServerProxy implements Runnable {
 
             while (connected) {
 
+                Util.log("Sending prompt");
                 writer.println("1: Anmelden, 2: Abmelden, 3: Nachricht senden, 4: Socket schließen");
                 int selection = readInt(reader);
+                Util.log("Received: " + selection);
 
                 switch (selection) {
                     case 1:
@@ -80,16 +84,25 @@ public class ChatProviderServerProxy implements Runnable {
     }
 
     private IChatter unmarshalChatter() throws IOException {
+        Util.log("Unmarshalling chatter");
         writer.println("ChatterId?: ");
+        Util.log("Waiting for response...");
         int id = readInt(reader);
+        Util.log("Received: " + id);
 
         if (chatterMap.containsKey(id)) {
             return chatterMap.get(id);
         }
 
+        Util.log("Asking for name");
         writer.println("Name?");
+        Util.log("Waiting for response...");
 
-        IChatter chatter = new DummyChatter(reader.readLine());
+        String userId = reader.readLine();
+        Util.log("Received userId: " + userId);
+        int port = Integer.parseInt(reader.readLine());
+        Util.log("Received port: " + port);
+        IChatter chatter = new ChatterClientStub(userId, new Socket(socket.getInetAddress(), port));
         chatterMap.put(id, chatter);
         return chatter;
     }

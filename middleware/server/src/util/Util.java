@@ -4,10 +4,7 @@ public class Util {
     public static void log(Object msg) {
         System.out.print (msg + " ");
 
-        try {
-            throw new Exception();
-        } catch (Exception e) {
-            System.out.println(e.getStackTrace()[e.getStackTrace().length - 2]);
-        }
+            StackTraceElement[] stackTrace = new Exception().getStackTrace();
+            System.out.println(stackTrace[stackTrace.length - 2]);
     }
 }
